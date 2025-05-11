@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-
 import 'package:styx_app/Pages/login_page.dart';
+import '../Services/RegisterService.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -23,44 +20,28 @@ class _RegisterPageState extends State<RegisterPage> {
   String _tipoDoc = 'CC';
 
   Future<void> _registerUser() async {
-    final url = Uri.parse('http://localhost:8074/api/usuario/register');
-    final data = {
-      "nombre": _nombreController.text,
-      "correo": _correoController.text,
-      "telefono": _telefonoController.text,
-      "idRol": 2, // Siempre cliente
-      "tipoDoc": _tipoDoc,
-      "numeroDoc": _numeroDocController.text,
-      "direccion": _direccionController.text,
-      "contrasena": _contrasenaController.text,
-    };
+    final error = await RegisterService.registerUser(
+      nombre: _nombreController.text,
+      correo: _correoController.text,
+      telefono: _telefonoController.text,
+      tipoDoc: _tipoDoc,
+      numeroDoc: _numeroDocController.text,
+      direccion: _direccionController.text,
+      contrasena: _contrasenaController.text,
+    );
 
-    try {
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(data),
+    if (error == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Registro exitoso')));
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
       );
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Registro exitoso')));
-
-        // Redirigir al login
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const LoginPage()),
-        );
-      } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: ${response.body}')));
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error al conectar con el servidor')),
-      );
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $error')));
     }
   }
 
@@ -75,9 +56,7 @@ class _RegisterPageState extends State<RegisterPage> {
       body: Center(
         child: SingleChildScrollView(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              maxWidth: 400, // Máximo 400px en pantallas grandes
-            ),
+            constraints: const BoxConstraints(maxWidth: 400),
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Form(
@@ -91,12 +70,11 @@ class _RegisterPageState extends State<RegisterPage> {
                         labelText: 'Nombre completo',
                         border: OutlineInputBorder(),
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor ingrese su nombre';
-                        }
-                        return null;
-                      },
+                      validator:
+                          (value) =>
+                              value == null || value.isEmpty
+                                  ? 'Por favor ingrese su nombre'
+                                  : null,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
@@ -124,12 +102,11 @@ class _RegisterPageState extends State<RegisterPage> {
                         border: OutlineInputBorder(),
                       ),
                       keyboardType: TextInputType.phone,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor ingrese su teléfono';
-                        }
-                        return null;
-                      },
+                      validator:
+                          (value) =>
+                              value == null || value.isEmpty
+                                  ? 'Por favor ingrese su teléfono'
+                                  : null,
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
@@ -157,19 +134,17 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                       ],
                       hint: const Text('Seleccione tipo de documento'),
-                      isExpanded:
-                          true, // Asegura que el ancho sea igual al campo
+                      isExpanded: true,
                       onChanged: (value) {
                         setState(() {
                           _tipoDoc = value!;
                         });
                       },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor seleccione un tipo de documento';
-                        }
-                        return null;
-                      },
+                      validator:
+                          (value) =>
+                              value == null || value.isEmpty
+                                  ? 'Por favor seleccione un tipo de documento'
+                                  : null,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
@@ -179,12 +154,11 @@ class _RegisterPageState extends State<RegisterPage> {
                         border: OutlineInputBorder(),
                       ),
                       keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor ingrese su número de documento';
-                        }
-                        return null;
-                      },
+                      validator:
+                          (value) =>
+                              value == null || value.isEmpty
+                                  ? 'Por favor ingrese su número de documento'
+                                  : null,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
@@ -193,12 +167,11 @@ class _RegisterPageState extends State<RegisterPage> {
                         labelText: 'Dirección',
                         border: OutlineInputBorder(),
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor ingrese su dirección';
-                        }
-                        return null;
-                      },
+                      validator:
+                          (value) =>
+                              value == null || value.isEmpty
+                                  ? 'Por favor ingrese su dirección'
+                                  : null,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(

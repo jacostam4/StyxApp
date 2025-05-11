@@ -1,10 +1,6 @@
-// lib/login_page.dart
-
 import 'package:flutter/material.dart';
 import 'register_page.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import '../Utils/token_storage.dart';
+import '../Services/AuthService.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -20,32 +16,21 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
-      final url = Uri.parse('http://localhost:8074/api/usuario/auth');
-      final headers = {"Content-Type": "application/json"};
-      final body = jsonEncode({
-        "email": _emailController.text,
-        "password": _passwordController.text,
-      });
-
-      try {
-        final response = await http.post(url, headers: headers, body: body);
-
-        if (response.statusCode == 200) {
-          final token = response.body;
-          await TokenStorage.saveToken(token);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Inicio de sesión exitoso')),
-          );
-          // Aquí puedes redirigir al Home o guardar el token
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Credenciales incorrectas')),
-          );
-        }
-      } catch (e) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      final success = await AuthService.login(
+        _emailController.text,
+        _passwordController.text,
+      );
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Inicio de sesión exitoso')),
+        );
+        // Aquí puedes redirigir al Home
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Credenciales incorrectas o error de red'),
+          ),
+        );
       }
     }
   }
@@ -61,9 +46,7 @@ class _LoginPageState extends State<LoginPage> {
       body: Center(
         child: SingleChildScrollView(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              maxWidth: 400, // 👈 Máximo 400px en pantallas grandes
-            ),
+            constraints: const BoxConstraints(maxWidth: 400),
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Form(
