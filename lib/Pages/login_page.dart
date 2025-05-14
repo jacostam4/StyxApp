@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'register_page.dart';
 import '../Services/AuthService.dart';
+import '../Pages/home_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -24,7 +25,10 @@ class _LoginPageState extends State<LoginPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Inicio de sesión exitoso')),
         );
-        // Aquí puedes redirigir al Home
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
