@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../Models/Product.dart';
 import '../Services/ProductoService.dart';
-import '../Utils/token_storage.dart'; // <-- Asegúrate de importar esto
+import '../Utils/token_storage.dart';
+import '../Pages/registrar_producto.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -12,14 +13,13 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late Future<List<Product>> _futureProducts;
-  String? rolUsuario; // <-- Nuevo: para guardar el rol
+  String? rolUsuario;
 
   @override
   void initState() {
     super.initState();
     _futureProducts = ProductoService.fetchAllProducts();
 
-    // Obtener el rol del usuario desde el token decodificado
     TokenStorage.getRol().then((rol) {
       setState(() {
         rolUsuario = rol;
@@ -47,35 +47,89 @@ class _HomePageState extends State<HomePage> {
           }
 
           final productos = snapshot.data!;
-          return ListView.builder(
-            itemCount: productos.length,
-            itemBuilder: (context, index) {
-              final producto = productos[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: ListTile(
-                  title: Text(producto.nombre),
-                  subtitle: Text(producto.referencia),
-                  trailing: Text('\$${producto.precio.toStringAsFixed(2)}'),
-                ),
-              );
-            },
+          return Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: GridView.builder(
+              itemCount: productos.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2, // 2 columnas
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+                childAspectRatio: 3 / 4,
+              ),
+              itemBuilder: (context, index) {
+                final producto = productos[index];
+                return Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  elevation: 4,
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Simulación de imagen del producto
+                        Container(
+                          height: 100,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade200,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.image,
+                            size: 50,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          producto.nombre,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          producto.referencia,
+                          style: const TextStyle(color: Colors.grey),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          '\$${producto.precio.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
           );
         },
       ),
-
-      // Mostrar botón solo si el usuario es admin
       floatingActionButton:
           rolUsuario == '1'
               ? FloatingActionButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, '/crear-producto');
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const RegistrarProductoPage(),
+                    ),
+                  );
                 },
-                backgroundColor: Colors.black, // fondo negro
-                child: const Icon(
-                  Icons.add,
-                  color: Colors.white, // ícono blanco
-                ),
+                backgroundColor: Colors.black,
+                child: const Icon(Icons.add, color: Colors.white),
               )
               : null,
     );
