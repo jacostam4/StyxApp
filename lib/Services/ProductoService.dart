@@ -6,7 +6,6 @@ import '../Utils/token_storage.dart';
 class ProductoService {
   static Future<List<Product>> fetchAllProducts() async {
     final url = Uri.parse('http://localhost:8074/api/producto/all');
-
     final token = await TokenStorage.getToken();
     print('TOKEN: $token');
 
@@ -24,6 +23,37 @@ class ProductoService {
     } else {
       print('Error: ${response.statusCode} - ${response.body}');
       throw Exception('Error al cargar productos');
+    }
+  }
+
+  static Future<void> crearProducto(Product producto) async {
+    final url = Uri.parse('http://localhost:8074/api/producto/register');
+    final token = await TokenStorage.getToken();
+
+    final body = jsonEncode({
+      "id_categoria": producto.idCategoria,
+      "nombre": producto.nombre,
+      "costo": producto.costo,
+      "precio": producto.precio,
+      "referencia": producto.referencia,
+    });
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: body,
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      print('Producto creado correctamente');
+    } else {
+      print(
+        'Error al crear producto: ${response.statusCode} - ${response.body}',
+      );
+      throw Exception('Error al crear producto');
     }
   }
 }
