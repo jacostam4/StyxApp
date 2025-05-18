@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:styx_app/Models/Product.dart';
+import 'package:styx_app/Models/Categoria.dart';
+import 'package:styx_app/Pages/home_page.dart';
+import 'package:styx_app/Services/CategoriaService.dart';
+import 'package:styx_app/Services/ProductoService.dart';
 
 class RegistrarProductoPage extends StatefulWidget {
   const RegistrarProductoPage({Key? key}) : super(key: key);
@@ -10,30 +14,68 @@ class RegistrarProductoPage extends StatefulWidget {
 
 class _RegistrarProductoPageState extends State<RegistrarProductoPage> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _idCategoriaController = TextEditingController();
+
   final TextEditingController _nombreController = TextEditingController();
   final TextEditingController _costoController = TextEditingController();
   final TextEditingController _precioController = TextEditingController();
   final TextEditingController _referenciaController = TextEditingController();
 
-  void _guardarProducto() {
-    if (_formKey.currentState!.validate()) {
-      final producto = Product(
-        idProducto: 0, // temporal, el backend lo asigna
-        idCategoria: int.parse(_idCategoriaController.text),
-        nombre: _nombreController.text,
-        costo: double.parse(_costoController.text),
-        precio: double.parse(_precioController.text),
-        referencia: _referenciaController.text,
-      );
+  List<Categoria> _categorias = [];
+  Categoria? _categoriaSeleccionada;
+  bool _isLoadingCategorias = true;
+  bool _isSubmitting = false;
 
-      // Aquí puedes guardar/enviar el producto al backend
+  @override
+  void initState() {
+    super.initState();
+    _fetchCategorias();
+  }
+
+  Future<void> _fetchCategorias() async {
+    try {
+      final categorias = await CategoriaService().getCategorias();
+      setState(() {
+        _categorias = categorias;
+        _isLoadingCategorias = false;
+      });
+    } catch (e) {
+      setState(() => _isLoadingCategorias = false);
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Producto guardado')));
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+    }
+  }
 
-      // Opcional: Navegar hacia atrás o limpiar campos
-      // Navigator.pop(context);
+  Future<void> _guardarProducto() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isSubmitting = true);
+
+    final producto = Product(
+      idProducto: 0,
+      idCategoria: _categoriaSeleccionada!.id,
+      nombre: _nombreController.text,
+      costo: double.parse(_costoController.text),
+      precio: double.parse(_precioController.text),
+      referencia: _referenciaController.text,
+    );
+
+    try {
+      await ProductoService.crearProducto(producto);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Producto guardado con éxito')),
+      );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomePage()),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error al guardar: $e')));
+    } finally {
+      setState(() => _isSubmitting = false);
     }
   }
 
@@ -59,16 +101,27 @@ class _RegistrarProductoPageState extends State<RegistrarProductoPage> {
           key: _formKey,
           child: Column(
             children: [
-              TextFormField(
-                controller: _idCategoriaController,
-                decoration: _inputDecoration('ID Categoría'),
-                keyboardType: TextInputType.number,
-                validator:
-                    (value) =>
-                        value == null || value.isEmpty
-                            ? 'Ingrese el ID de la categoría'
-                            : null,
-              ),
+              _isLoadingCategorias
+                  ? const CircularProgressIndicator()
+                  : DropdownButtonFormField<Categoria>(
+                    value: _categoriaSeleccionada,
+                    items:
+                        _categorias.map((cat) {
+                          return DropdownMenuItem<Categoria>(
+                            value: cat,
+                            child: Text(cat.nombre),
+                          );
+                        }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _categoriaSeleccionada = value;
+                      });
+                    },
+                    decoration: _inputDecoration('Categoría'),
+                    validator:
+                        (value) =>
+                            value == null ? 'Seleccione una categoría' : null,
+                  ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _nombreController,
@@ -115,7 +168,7 @@ class _RegistrarProductoPageState extends State<RegistrarProductoPage> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _guardarProducto,
+                  onPressed: _isSubmitting ? null : _guardarProducto,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.black,
                     padding: const EdgeInsets.symmetric(vertical: 14),
@@ -123,10 +176,13 @@ class _RegistrarProductoPageState extends State<RegistrarProductoPage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
-                    'Guardar',
-                    style: TextStyle(color: Colors.white, fontSize: 16),
-                  ),
+                  child:
+                      _isSubmitting
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text(
+                            'Guardar',
+                            style: TextStyle(color: Colors.white, fontSize: 16),
+                          ),
                 ),
               ),
             ],
