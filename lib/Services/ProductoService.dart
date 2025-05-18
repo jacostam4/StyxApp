@@ -56,4 +56,28 @@ class ProductoService {
       throw Exception('Error al crear producto');
     }
   }
+
+  static Future<Product> fetchProductoById(int idProducto) async {
+    final url = Uri.parse(
+      'http://localhost:8074/api/producto/search/$idProducto',
+    );
+    final token = await TokenStorage.getToken();
+
+    final response = await http.get(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return Product.fromJson(jsonDecode(response.body));
+    } else {
+      print(
+        'Error al obtener producto: ${response.statusCode} - ${response.body}',
+      );
+      throw Exception('Error al obtener producto');
+    }
+  }
 }
