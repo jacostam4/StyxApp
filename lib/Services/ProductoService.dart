@@ -80,4 +80,37 @@ class ProductoService {
       throw Exception('Error al obtener producto');
     }
   }
+  
+  static Future<void> actualizarProducto(Product producto) async {
+    final url = Uri.parse(
+      'http://localhost:8074/api/producto/update/${producto.idProducto}',
+    );
+    final token = await TokenStorage.getToken();
+
+    final body = jsonEncode({
+      "id_categoria": producto.idCategoria,
+      "nombre": producto.nombre,
+      "costo": producto.costo,
+      "precio": producto.precio,
+      "referencia": producto.referencia,
+    });
+
+    final response = await http.put(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: body,
+    );
+
+    if (response.statusCode == 200) {
+      print('Producto actualizado correctamente');
+    } else {
+      print(
+        'Error al actualizar producto: ${response.statusCode} - ${response.body}',
+      );
+      throw Exception('Error al actualizar producto');
+    }
+  }
 }
