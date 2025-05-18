@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+
 import 'package:styx_app/Utils/token_storage.dart';
 
 import '../Models/Product.dart';
@@ -10,14 +11,12 @@ import '../Pages/editar_producto_page.dart';
 
 class DetalleProductoPage extends StatefulWidget {
 
-
 class DetalleProductoPage extends StatelessWidget {
   final int idProducto;
 
   const DetalleProductoPage({super.key, required this.idProducto});
 
   @override
-
   State<DetalleProductoPage> createState() => _DetalleProductoPageState();
 }
 
@@ -38,7 +37,6 @@ class _DetalleProductoPageState extends State<DetalleProductoPage> {
   }
 
   @override
-
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[100],
@@ -48,6 +46,7 @@ class _DetalleProductoPageState extends State<DetalleProductoPage> {
         foregroundColor: Colors.white,
       ),
       body: FutureBuilder<Product>(
+
         future: ProductoService.fetchProductoById(widget.idProducto),
         builder: (context, productoSnapshot) {
           if (productoSnapshot.connectionState == ConnectionState.waiting) {
@@ -109,7 +108,7 @@ class _DetalleProductoPageState extends State<DetalleProductoPage> {
                           ),
                           child: Container(
                             width: double.infinity,
-                            height: 200,
+
                             height: 200, // Más pequeño que antes
                             color: Colors.grey[200],
                             child:
@@ -160,7 +159,6 @@ class _DetalleProductoPageState extends State<DetalleProductoPage> {
                                   color: Colors.black,
                                 ),
                               ),
-
                               const SizedBox(height: 20),
                               // Botón visible solo para administradores (rol 1)
                               if (rolUsuario == "1")

@@ -80,8 +80,7 @@ class ProductoService {
       throw Exception('Error al obtener producto');
     }
   }
-
-
+  
   static Future<void> actualizarProducto(Product producto) async {
     final url = Uri.parse(
       'http://localhost:8074/api/producto/update/${producto.idProducto}',
