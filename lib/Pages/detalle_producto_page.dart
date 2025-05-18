@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import 'package:styx_app/Utils/token_storage.dart';
+
 import '../Models/Product.dart';
 import '../Models/ProductoImagen.dart';
 import '../Services/ProductoService.dart';
@@ -7,11 +9,15 @@ import '../Services/ProductoImagenService.dart';
 import '../Pages/editar_producto_page.dart';
 
 class DetalleProductoPage extends StatefulWidget {
+
+
+class DetalleProductoPage extends StatelessWidget {
   final int idProducto;
 
   const DetalleProductoPage({super.key, required this.idProducto});
 
   @override
+
   State<DetalleProductoPage> createState() => _DetalleProductoPageState();
 }
 
@@ -32,6 +38,7 @@ class _DetalleProductoPageState extends State<DetalleProductoPage> {
   }
 
   @override
+
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[100],
@@ -65,6 +72,24 @@ class _DetalleProductoPageState extends State<DetalleProductoPage> {
               final imagenUrl =
                   (imagenSnapshot.hasData && imagenSnapshot.data!.isNotEmpty)
                       ? imagenSnapshot.data!.first.urlImagen
+        future: ProductoService.fetchProductoById(idProducto),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData) {
+            return const Center(child: Text('Producto no encontrado'));
+          }
+
+          final producto = snapshot.data!;
+
+          return FutureBuilder<List<ProductoImagen>>(
+            future: ProductoImagenService.fetchImagenesPorProducto(idProducto),
+            builder: (context, imageSnapshot) {
+              final imagenUrl =
+                  (imageSnapshot.hasData && imageSnapshot.data!.isNotEmpty)
+                      ? imageSnapshot.data!.first.urlImagen
                       : null;
 
               return SingleChildScrollView(
@@ -78,7 +103,6 @@ class _DetalleProductoPageState extends State<DetalleProductoPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Imagen del producto
                         ClipRRect(
                           borderRadius: const BorderRadius.vertical(
                             top: Radius.circular(20),
@@ -86,12 +110,16 @@ class _DetalleProductoPageState extends State<DetalleProductoPage> {
                           child: Container(
                             width: double.infinity,
                             height: 200,
+                            height: 200, // Más pequeño que antes
                             color: Colors.grey[200],
                             child:
                                 imagenUrl != null
                                     ? Image.network(
                                       imagenUrl,
                                       fit: BoxFit.contain,
+                                      fit:
+                                          BoxFit
+                                              .contain, // Mostrar la imagen completa sin recortes
                                     )
                                     : const Center(
                                       child: Icon(
@@ -102,6 +130,7 @@ class _DetalleProductoPageState extends State<DetalleProductoPage> {
                                     ),
                           ),
                         ),
+
                         Padding(
                           padding: const EdgeInsets.all(20),
                           child: Column(
@@ -131,8 +160,8 @@ class _DetalleProductoPageState extends State<DetalleProductoPage> {
                                   color: Colors.black,
                                 ),
                               ),
-                              const SizedBox(height: 20),
 
+                              const SizedBox(height: 20),
                               // Botón visible solo para administradores (rol 1)
                               if (rolUsuario == "1")
                                 Center(
@@ -156,6 +185,7 @@ class _DetalleProductoPageState extends State<DetalleProductoPage> {
                                     ),
                                   ),
                                 ),
+                              const SizedBox(height: 10),
                             ],
                           ),
                         ),
