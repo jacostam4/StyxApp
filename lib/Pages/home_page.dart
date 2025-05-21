@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:styx_app/Pages/inventario_page.dart';
 import '../Models/Product.dart';
 import '../Models/ProductoImagen.dart';
 import '../Services/ProductoService.dart';
@@ -81,6 +82,21 @@ class _HomePageState extends State<HomePage> {
                       },
                     ),
                     ListTile(
+                      leading: const Icon(Icons.warehouse),
+                      title: const Text('Inventario'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) =>
+                                    const InventarioPage(), // Asegúrate de crear esta página
+                          ),
+                        );
+                      },
+                    ),
+                    ListTile(
                       leading: const Icon(Icons.logout),
                       title: const Text('Cerrar sesión'),
                       onTap: () async {
@@ -97,6 +113,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               )
               : null,
+
       body: FutureBuilder<List<Product>>(
         future: _futureProducts,
         builder: (context, snapshot) {
