@@ -36,7 +36,6 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  // Verifica si hay token, si no, redirige al login
   void _verificarAutenticacion() async {
     final token = await TokenStorage.getToken();
     if (token == null) {
@@ -55,6 +54,49 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       appBar: StyxAppBar(rolUsuario: rolUsuario, currentRoute: currentRoute),
+      drawer:
+          isAdmin
+              ? Drawer(
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  children: [
+                    const DrawerHeader(
+                      decoration: BoxDecoration(color: Colors.black),
+                      child: Text(
+                        'Menú administrador',
+                        style: TextStyle(color: Colors.white, fontSize: 20),
+                      ),
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.inventory),
+                      title: const Text('Registrar producto'),
+                      onTap: () {
+                        Navigator.pop(context); // cerrar drawer
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const RegistrarProductoPage(),
+                          ),
+                        );
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.logout),
+                      title: const Text('Cerrar sesión'),
+                      onTap: () async {
+                        await TokenStorage.deleteToken(); // borrar token
+                        if (!mounted) return;
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (_) => const LoginPage()),
+                          (route) => false,
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              )
+              : null,
       body: FutureBuilder<List<Product>>(
         future: _futureProducts,
         builder: (context, snapshot) {
