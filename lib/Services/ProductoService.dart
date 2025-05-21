@@ -80,8 +80,6 @@ class ProductoService {
       throw Exception('Error al obtener producto');
     }
   }
-<<<<<<< HEAD
-=======
 
   static Future<void> actualizarProducto(Product producto) async {
     final url = Uri.parse(
@@ -115,5 +113,4 @@ class ProductoService {
       throw Exception('Error al actualizar producto');
     }
   }
->>>>>>> hu-006
 }

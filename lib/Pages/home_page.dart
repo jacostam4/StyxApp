@@ -6,7 +6,8 @@ import '../Services/ProductoImagenService.dart';
 import '../Utils/token_storage.dart';
 import '../Pages/registrar_producto.dart';
 import '../Pages/detalle_producto_page.dart';
-import '../Pages/login_page.dart'; // Asegúrate de tener esta página
+import '../Pages/login_page.dart';
+import '../Widgets/StyxAppBar.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -22,10 +23,12 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-
     _verificarAutenticacion();
 
+    // Cargar productos
     _futureProducts = ProductoService.fetchAllProducts();
+
+    // Obtener el rol del usuario
     TokenStorage.getRol().then((rol) {
       setState(() {
         rolUsuario = rol;
@@ -33,10 +36,10 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  // Verifica si hay token, si no, redirige al login
   void _verificarAutenticacion() async {
     final token = await TokenStorage.getToken();
     if (token == null) {
-      // Redirecciona si no hay token
       if (!mounted) return;
       Navigator.pushReplacement(
         context,
@@ -47,12 +50,11 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    const currentRoute = 'HomePage';
+    final isAdmin = rolUsuario == '1';
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Styx'),
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-      ),
+      appBar: StyxAppBar(rolUsuario: rolUsuario, currentRoute: currentRoute),
       body: FutureBuilder<List<Product>>(
         future: _futureProducts,
         builder: (context, snapshot) {
@@ -90,15 +92,13 @@ class _HomePageState extends State<HomePage> {
                       return Center(
                         child: Text('Error: ${imageSnapshot.error}'),
                       );
-                    } else if (!imageSnapshot.hasData ||
-                        imageSnapshot.data!.isEmpty) {
-                      return _buildProductCard(producto, null);
                     }
 
                     final imagenUrl =
-                        imageSnapshot.data!.isNotEmpty
+                        imageSnapshot.data?.isNotEmpty == true
                             ? imageSnapshot.data![0].urlImagen
                             : null;
+
                     return _buildProductCard(producto, imagenUrl);
                   },
                 );
@@ -108,7 +108,7 @@ class _HomePageState extends State<HomePage> {
         },
       ),
       floatingActionButton:
-          rolUsuario == '1'
+          isAdmin
               ? FloatingActionButton(
                 onPressed: () {
                   Navigator.pushReplacement(
@@ -154,7 +154,10 @@ class _HomePageState extends State<HomePage> {
                 ),
                 child:
                     imagenUrl != null && imagenUrl.isNotEmpty
-                        ? Image.network(imagenUrl, fit: BoxFit.cover)
+                        ? ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.network(imagenUrl, fit: BoxFit.cover),
+                        )
                         : const Icon(Icons.image, size: 50, color: Colors.grey),
               ),
               const SizedBox(height: 12),
