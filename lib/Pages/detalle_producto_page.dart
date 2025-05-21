@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-
-
 import 'package:styx_app/Utils/token_storage.dart';
 
 import '../Models/Product.dart';
@@ -8,10 +6,9 @@ import '../Models/ProductoImagen.dart';
 import '../Services/ProductoService.dart';
 import '../Services/ProductoImagenService.dart';
 import '../Pages/editar_producto_page.dart';
+import '../Widgets/StyxAppBar.dart';
 
 class DetalleProductoPage extends StatefulWidget {
-
-class DetalleProductoPage extends StatelessWidget {
   final int idProducto;
 
   const DetalleProductoPage({super.key, required this.idProducto});
@@ -40,38 +37,12 @@ class _DetalleProductoPageState extends State<DetalleProductoPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[100],
-      appBar: AppBar(
-        title: const Text('Detalle del Producto'),
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
+      appBar: StyxAppBar(
+        rolUsuario: rolUsuario,
+        currentRoute: 'DetalleProductoPage',
       ),
       body: FutureBuilder<Product>(
-
         future: ProductoService.fetchProductoById(widget.idProducto),
-        builder: (context, productoSnapshot) {
-          if (productoSnapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (productoSnapshot.hasError) {
-            return Center(child: Text('Error: ${productoSnapshot.error}'));
-          }
-
-          if (!productoSnapshot.hasData) {
-            return const Center(child: Text('Producto no encontrado'));
-          }
-
-          final producto = productoSnapshot.data!;
-
-          return FutureBuilder<List<ProductoImagen>>(
-            future: ProductoImagenService.fetchImagenesPorProducto(
-              widget.idProducto,
-            ),
-            builder: (context, imagenSnapshot) {
-              final imagenUrl =
-                  (imagenSnapshot.hasData && imagenSnapshot.data!.isNotEmpty)
-                      ? imagenSnapshot.data!.first.urlImagen
-        future: ProductoService.fetchProductoById(idProducto),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -84,7 +55,9 @@ class _DetalleProductoPageState extends State<DetalleProductoPage> {
           final producto = snapshot.data!;
 
           return FutureBuilder<List<ProductoImagen>>(
-            future: ProductoImagenService.fetchImagenesPorProducto(idProducto),
+            future: ProductoImagenService.fetchImagenesPorProducto(
+              widget.idProducto,
+            ),
             builder: (context, imageSnapshot) {
               final imagenUrl =
                   (imageSnapshot.hasData && imageSnapshot.data!.isNotEmpty)
@@ -108,17 +81,13 @@ class _DetalleProductoPageState extends State<DetalleProductoPage> {
                           ),
                           child: Container(
                             width: double.infinity,
-
-                            height: 200, // Más pequeño que antes
+                            height: 200,
                             color: Colors.grey[200],
                             child:
                                 imagenUrl != null
                                     ? Image.network(
                                       imagenUrl,
                                       fit: BoxFit.contain,
-                                      fit:
-                                          BoxFit
-                                              .contain, // Mostrar la imagen completa sin recortes
                                     )
                                     : const Center(
                                       child: Icon(
@@ -129,7 +98,6 @@ class _DetalleProductoPageState extends State<DetalleProductoPage> {
                                     ),
                           ),
                         ),
-
                         Padding(
                           padding: const EdgeInsets.all(20),
                           child: Column(
@@ -160,7 +128,6 @@ class _DetalleProductoPageState extends State<DetalleProductoPage> {
                                 ),
                               ),
                               const SizedBox(height: 20),
-                              // Botón visible solo para administradores (rol 1)
                               if (rolUsuario == "1")
                                 Center(
                                   child: ElevatedButton.icon(
