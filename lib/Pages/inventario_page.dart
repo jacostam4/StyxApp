@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:styx_app/Services/ProductoService.dart';
 import '../models/inventario.dart';
 import '../Services/InventarioService.dart';
 import '../Services/TallaService.dart';
@@ -11,14 +12,19 @@ class InventarioPage extends StatelessWidget {
     final inventarios = await InventarioService().getAllInventarios();
     final tallas = await Tallaservice.fetchAllTallas();
     final almacenes = await Almacenservice.getAlmacenes();
+    final productos = await ProductoService.fetchAllProducts();
 
     final tallaMap = {for (var talla in tallas) talla.idTalla: talla.nombre};
     final almacenMap = {for (var alm in almacenes) alm.idAlmacen: alm.nombre};
+    final productoMap = {
+      for (var prod in productos) prod.idProducto: prod.nombre,
+    };
 
     return {
       'inventarios': inventarios,
       'tallaMap': tallaMap,
       'almacenMap': almacenMap,
+      'productoMap': productoMap,
     };
   }
 
@@ -44,7 +50,7 @@ class InventarioPage extends StatelessWidget {
           final inventarios = snapshot.data!['inventarios'] as List<Inventario>;
           final tallaMap = snapshot.data!['tallaMap'] as Map<int, String>;
           final almacenMap = snapshot.data!['almacenMap'] as Map<int, String>;
-
+          final productoMap = snapshot.data!['productoMap'] as Map<int, String>;
           return SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: DataTable(
@@ -64,11 +70,12 @@ class InventarioPage extends StatelessWidget {
                   inventarios.map((inv) {
                     final tallaNombre = tallaMap[inv.idTalla] ?? 'N/A';
                     final almacenNombre = almacenMap[inv.idAlmacen] ?? 'N/A';
+                    final productoNombre = productoMap[inv.idProducto] ?? 'N/A';
 
                     return DataRow(
                       cells: [
                         DataCell(Text(inv.idInventario.toString())),
-                        DataCell(Text(inv.idProducto.toString())),
+                        DataCell(Text(productoNombre)),
                         DataCell(Text(almacenNombre)),
                         DataCell(Text(tallaNombre)),
                         DataCell(Text(inv.cantidad.toString())),
