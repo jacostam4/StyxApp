@@ -1,40 +1,43 @@
 class Inventario {
   final int idInventario;
   final int idProducto;
-  final int idAlmacen;
-  final int idTalla;
+  final int? idAlmacen; // <- permite null
+  final int? idTalla; // <- permite null
   final int cantidad;
   final int cantidadDisponible;
   final int cantidadNoDisponible;
   final int reservado;
   final int enBodega;
-  final DateTime fechaUltimaMovimiento;
+  final DateTime? fechaUltimaMovimiento; // <- permite null
 
   Inventario({
     required this.idInventario,
     required this.idProducto,
-    required this.idAlmacen,
-    required this.idTalla,
+    this.idAlmacen,
+    this.idTalla,
     required this.cantidad,
     required this.cantidadDisponible,
     required this.cantidadNoDisponible,
     required this.reservado,
     required this.enBodega,
-    required this.fechaUltimaMovimiento,
+    this.fechaUltimaMovimiento,
   });
 
   factory Inventario.fromJson(Map<String, dynamic> json) {
     return Inventario(
       idInventario: json['idInventario'],
       idProducto: json['idProducto'],
-      idAlmacen: json['idAlmacen'],
-      idTalla: json['idTalla'],
+      idAlmacen: json['idAlmacen'], // puede ser null
+      idTalla: json['idTalla'], // puede ser null
       cantidad: json['cantidad'],
       cantidadDisponible: json['cantidadDisponible'],
       cantidadNoDisponible: json['cantidadNoDisponible'],
       reservado: json['reservado'],
       enBodega: json['enBodega'],
-      fechaUltimaMovimiento: DateTime.parse(json['fechaUltimaMovimiento']),
+      fechaUltimaMovimiento:
+          json['fechaUltimaMovimiento'] != null
+              ? DateTime.parse(json['fechaUltimaMovimiento'])
+              : null,
     );
   }
 
@@ -49,7 +52,8 @@ class Inventario {
       'cantidadNoDisponible': cantidadNoDisponible,
       'reservado': reservado,
       'enBodega': enBodega,
-      'fechaUltimaMovimiento': fechaUltimaMovimiento.toIso8601String(),
+      'fechaUltimaMovimiento':
+          fechaUltimaMovimiento?.toIso8601String(), // usa null safety
     };
   }
 }
